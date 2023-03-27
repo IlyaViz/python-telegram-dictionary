@@ -1,0 +1,13 @@
+services:
+  
+  postgres-server:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD="Winter2005"
+  
+  tg_bot:
+    build: .
+    depends_on:
+      - postgres-server
+    environment:
+      - PG_PASSWORD="Winter2005"
