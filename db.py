@@ -40,3 +40,17 @@ class DbConnection:
             VALUES('{username}', '{word}', '{meaning}')""")
         except:
             return DbStatuses.dictionary_error
+        
+    def get_word(self, username, word):
+        #Get all words if *, otherwise get certain word
+        query = f"""SELECT word, meaning FROM dictionary
+            WHERE user_username='{username}'""" if word == '*' else f"""SELECT word, meaning
+            FROM dictionary WHERE user_username='{username}' AND word='{word}'"""
+        try:
+            self.cursor.execute(query)
+            result = self.cursor.fetchall()
+            if len(result) != 0:
+                return result
+            return DbStatuses.dictionary_error
+        except:
+            return DbStatuses.dictionary_error

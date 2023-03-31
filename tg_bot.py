@@ -1,6 +1,7 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from classes import UserStatuses, DbStatuses
 from db import DbConnection
+from decorators import authorized_required
 
 db_connection = DbConnection()
 
@@ -24,15 +25,15 @@ def login(update, context):
         update.message.reply_text("Provide data in format <login:password> (LOGINING)")
         context.user_data['status'] = UserStatuses.logining
 
+@authorized_required
 def new_word(update, context):
-    if context.user_data.get("authorized", False):
-        context.user_data["status"] = UserStatuses.adding_word
-        update.message.reply_text("Enter your data in format <word:word>")
-    else:
-        update.message.reply_text("You are not authorized")
+    context.user_data["status"] = UserStatuses.adding_word
+    update.message.reply_text("Enter your data in format <word:word>")
 
+@authorized_required
 def get_word(update, context):
-    pass
+    context.user_data["status"] = UserStatuses.getting_word
+    update.message.reply_text("Enter the word ( * to get all words )")
 
 def input(update, context):
     match context.user_data.get("status", None):
@@ -59,7 +60,14 @@ def input(update, context):
                 update.message.reply_text("Invalid data")
 
         case UserStatuses.getting_word:
-            pass
+            word = update.message.text.lower()
+            username = context.user_data["authorized"]
+            if (result := db_connection.get_word(username, word)) == DbStatuses.dictionary_error:
+                update.message.reply_text("Error. Probably there is no such word")
+            else:
+                for row in result:
+                    data = ": ".join(row)
+                    update.message.reply_text(data)
 
         case UserStatuses.adding_word:
             data = update.message.text
