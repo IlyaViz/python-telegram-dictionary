@@ -1,14 +1,26 @@
 import psycopg2
 import os
+import time
 from classes import DbStatuses
 
 class DbConnection:
     def __init__(self):
         PASSWORD = os.environ['PG_PASSWORD']
-        self.connection = psycopg2.connect( host="postgres-server", 
-                                            database="postgres", 
-                                            user="postgres", 
-                                            password=PASSWORD)
+        retry_count = 0
+        while True:
+            if retry_count == 3:
+                raise psycopg2.OperationalError("No access to db. Check if db has started")
+            
+            try:
+                self.connection = psycopg2.connect( host="postgres-server", 
+                                                database="postgres", 
+                                                user="postgres", 
+                                                password=PASSWORD)
+                break
+            except psycopg2.OperationalError as e:
+                retry_count += 1
+                time.sleep(1)
+  
         self.connection.autocommit = True   
         self.cursor = self.connection.cursor()
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS
@@ -16,14 +28,14 @@ class DbConnection:
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS
         dictionary(id SERIAL PRIMARY KEY, user_username VARCHAR(20) REFERENCES users(username), word VARCHAR(40), meaning VARCHAR(40))""")
 
-    def add_user(self, username, password):
+    def add_user(self, username:str, password:str):
         try:
             self.cursor.execute(f"""INSERT INTO users(username, password)
             VALUES('{username}', '{password}');""")
         except:
             return DbStatuses.user_already_created
 
-    def is_login_successful(self, username, password):
+    def is_login_successful(self, username:str, password:str):
         try:
             self.cursor.execute(f"""SELECT * FROM users WHERE
             username='{username}' AND password='{password}';""")
@@ -34,14 +46,14 @@ class DbConnection:
         except:
             return False
         
-    def add_word(self, username, word, meaning):
+    def add_word(self, username:str, word:str, meaning:str):
         try:
             self.cursor.execute(f"""INSERT INTO dictionary(user_username, word, meaning)
             VALUES('{username}', '{word}', '{meaning}')""")
         except:
             return DbStatuses.dictionary_error
         
-    def get_word(self, username, word):
+    def get_word(self, username:str, word:str):
         #Get all words if *, otherwise get certain word
         query = f"""SELECT word, meaning FROM dictionary
             WHERE user_username='{username}'""" if word == '*' else f"""SELECT word, meaning
