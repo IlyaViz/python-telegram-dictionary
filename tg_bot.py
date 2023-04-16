@@ -70,6 +70,7 @@ def input(update, context):
                     update.message.reply_text(data)
 
         case UserStatuses.adding_word:
+            # we add only lowercase words
             data = update.message.text
             username = context.user_data["authorized"]
             word, meaning = data.lower().split(":")
