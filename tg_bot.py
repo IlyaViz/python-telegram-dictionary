@@ -34,7 +34,7 @@ def add_word(update, context):
 @authorized_required
 def get_word(update, context):
     context.user_data["status"] = UserStatuses.getting_word
-    update.message.reply_text("Enter the word ( * to get_word all words )")
+    update.message.reply_text("Enter the word ( * to get all words )")
 
 @authorized_required
 def get_all_group_words(update, context):
