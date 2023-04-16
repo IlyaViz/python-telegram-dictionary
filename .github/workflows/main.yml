@@ -36,5 +36,5 @@ jobs:
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         script: |
-          cd / && cd docker_project/github/workspace && docker compose up
+          cd / && cd docker_project/github/workspace && docker compose up --build --detach
           # execute your commands here
