@@ -18,7 +18,7 @@ class DbStatuses(enum.Enum):
     @property
     def description(self):
         descriptions = {DbStatuses.success:"Success",
-                        DbStatuses.no_data:"This data wasn't found",
+                        DbStatuses.no_data:"This data wasn't found. Check if input data exists and has something inside",
                         DbStatuses.user_already_created:"Seems that user was already created",
                         DbStatuses.inserting_error:"Something went wrong, maybe already exists",
                         DbStatuses.group_not_exist:"There is not such group"}
