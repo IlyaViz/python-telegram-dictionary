@@ -7,8 +7,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v2
+
+    - name: SSH into azure and stopping docker compose
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        script: |
+            cd / && cd docker_project/github/workspace && docker compose down
+            # execute your commands here
 
     - name: Copy file to Azure VM
       uses: appleboy/scp-action@master
@@ -18,13 +28,13 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         source: "${{ github.workspace }}"
         target: "/docker_project"
-        
-    - name: SSH into Azure VM
+         
+    - name: SSH into Azure VM and starting docker compose
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         script: |
-          cd / && cd docker_project
+          cd / && cd docker_project/github/workspace && docker compose up
           # execute your commands here
