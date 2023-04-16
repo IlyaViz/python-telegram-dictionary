@@ -83,7 +83,7 @@ class DbConnection:
             for row in query_result:
                 final_result += ": ".join(row) + "\n"
             return final_result
-        return DbStatuses.no_data
+        return DbStatuses.blank_list
 
     def get_all_group_words(self, username:str, group:str) -> Union[str, DbStatuses]:
         self.cursor.execute(f"""SELECT word, meaning FROM words
@@ -94,6 +94,17 @@ class DbConnection:
             for row in query_result:
                 final_result += ": ".join(row) + "\n"
             return final_result
-        return DbStatuses.no_data
+        return DbStatuses.blank_list
+    
+    def get_all_groups(self, username:str) -> str:
+        self.cursor.execute(f"""SELECT name FROM groups
+        WHERE user_username='{username}';""")
+        query_result = self.cursor.fetchall()
+        if query_result != []:
+            final_result = ""
+            for row in query_result:
+                final_result += ": ".join(row) + "\n"
+            return final_result
+        return DbStatuses.blank_list
        
 
