@@ -14,6 +14,8 @@ class DbStatuses(enum.Enum):
     user_already_created = 2
     inserting_error = 3
     group_not_exist = 4
+    blank_list = 5
+    
     
     @property
     def description(self):
@@ -21,5 +23,6 @@ class DbStatuses(enum.Enum):
                         DbStatuses.no_data:"This data wasn't found. Check if input data exists and has something inside",
                         DbStatuses.user_already_created:"Seems that user was already created",
                         DbStatuses.inserting_error:"Something went wrong, maybe already exists",
-                        DbStatuses.group_not_exist:"There is not such group"}
+                        DbStatuses.group_not_exist:"There is no such group",
+                        DbStatuses.blank_list:"The result is empty"}
         return descriptions[self]
