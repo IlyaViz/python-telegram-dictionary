@@ -89,14 +89,16 @@ def input(update, context):
             data = update.message.text
             username = context.user_data["authorized"]
             try:
-                word, meaning, group_name = data.lower().split(":")
+                word, meaning, group_name = data.split(":")
+                # words and meaning should be lowercase; group_name should be standart case
+                word, meaning = word.lower(), meaning.lower()
                 result = db_connection.add_word(username, word, meaning, group_name)
                 update.message.reply_text(result.description)
             except:
                 update.message.reply_text('Bad format')
     
         case UserStatuses.getting_word:
-            #lower the word to find it in all words(all words are low)
+            #lower the word to find it in all words(all words are lowercase)
             word = update.message.text.lower()
             username = context.user_data["authorized"]
             result = db_connection.get_word(username, word)
