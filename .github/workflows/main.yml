@@ -3,7 +3,7 @@ name: SSH into Azure VM
 on: [push]
 
 jobs:
-  build:
+  my_job:
     runs-on: ubuntu-latest
 
     steps:
