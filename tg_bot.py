@@ -45,7 +45,10 @@ def get_all_group_words(update, context):
 def get_all_groups(update, context):
     username = context.user_data["authorized"]
     result = db_connection.get_all_groups(username)
-    update.message.reply_text(result)
+    if isinstance(result, str):
+        update.message.reply_text(result)
+    else:
+        update.message.reply_text(result.description)
 
 def input(update, context):
     match context.user_data.get("status", None):
