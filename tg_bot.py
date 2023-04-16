@@ -1,7 +1,7 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from classes import UserStatuses, DbStatuses
 from db import DbConnection
-from decorators import authorized_required
+from decorators import authorized_required, unauthorized_required
 
 db_connection = DbConnection()
 
@@ -11,19 +11,15 @@ dispatcher = updater.dispatcher
 
 AVAILABLE_COMMANDS = ["register", "login", "add_group", "add_word", "get_word", "get_all_group_words"]
 
+@unauthorized_required
 def register(update, context):
-    if context.user_data.get("authorized", False):
-        update.message.reply_text("Already authorized")
-    else:
-        update.message.reply_text("Provide data in format login:password(REGISTRATION)")
-        context.user_data["status"] = UserStatuses.registration
+    update.message.reply_text("Provide data in format login:password (registartion)")
+    context.user_data["status"] = UserStatuses.registration
 
+@unauthorized_required
 def login(update, context):
-    if username := context.user_data.get("authorized", False):
-        update.message.reply_text(f"You are already logged in as {username}")
-    else:
-        update.message.reply_text("Provide data in format <login:password> (LOGINING)")
-        context.user_data['status'] = UserStatuses.logining
+    update.message.reply_text("Provide data in format <login:password> (logining)")
+    context.user_data['status'] = UserStatuses.logining
 
 @authorized_required
 def add_group(update, context):
@@ -80,7 +76,7 @@ def input(update, context):
             update.message.reply_text(result.description)
 
         case UserStatuses.adding_word:
-        # we add only lowercase words
+        #add only lowercase words
             data = update.message.text
             username = context.user_data["authorized"]
             try:
@@ -91,6 +87,7 @@ def input(update, context):
                 update.message.reply_text('Bad format')
     
         case UserStatuses.getting_word:
+            #lower the word to find it in all words(all words are low)
             word = update.message.text.lower()
             username = context.user_data["authorized"]
             result = db_connection.get_word(username, word)
