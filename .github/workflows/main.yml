@@ -1,9 +1,9 @@
-name: SSH into Azure VM
+name: Starting docker compose on linux virtual machine on azure
 
 on: [push]
 
 jobs:
-  my_job:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +18,6 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         script: |
             cd / && cd docker_project/github/workspace && docker compose down
-            # execute your commands here
 
     - name: Copy file to Azure VM
       uses: appleboy/scp-action@master
@@ -37,4 +36,4 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         script: |
           cd / && cd docker_project/github/workspace && docker compose up --build --detach
-          # execute your commands here
+ 
