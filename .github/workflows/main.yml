@@ -17,5 +17,5 @@ jobs:
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         script: |
-          echo "Logged in to VM"
+          cd /; ls
           # execute your commands here
