@@ -9,7 +9,7 @@ TOKEN = "5776698149:AAEFmN4J5n3nbf8f_th8LeuYo3XMwVHoKrE"
 updater = Updater(TOKEN)
 dispatcher = updater.dispatcher
 
-AVAILABLE_COMMANDS = ["register", "login", "add_group", "add_word", "get_word", "get_all_group_words"]
+AVAILABLE_COMMANDS = ["register", "login", "add_group", "add_word", "get_word", "get_all_group_words", "get_all_groups"]
 
 @unauthorized_required
 def register(update, context):
@@ -40,6 +40,12 @@ def get_word(update, context):
 def get_all_group_words(update, context):
     context.user_data["status"] = UserStatuses.getting_all_group_words
     update.message.reply_text("Enter the group name")
+
+@authorized_required
+def get_all_groups(update, context):
+    username = context.user_data["authorized"]
+    result = db_connection.get_all_groups(username)
+    update.message.reply_text(result)
 
 def input(update, context):
     match context.user_data.get("status", None):
@@ -121,6 +127,7 @@ if __name__ == "__main__":
     dispatcher.add_handler(CommandHandler("add_word", add_word))
     dispatcher.add_handler(CommandHandler("get_word", get_word))
     dispatcher.add_handler(CommandHandler("get_all_group_words", get_all_group_words))
+    dispatcher.add_handler(CommandHandler("get_all_groups", get_all_groups))
     dispatcher.add_handler(MessageHandler(Filters.text, input))
 
     updater.start_polling()
