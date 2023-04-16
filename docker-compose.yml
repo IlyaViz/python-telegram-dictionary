@@ -3,7 +3,7 @@ version: '3'
 services:
   postgres-server:
     image: postgres
-    restart: always
+    restart: on-failure
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -11,7 +11,7 @@ services:
   
   tg_bot:
     build: .
-    restart: always
+    restart: on-failure
     depends_on:
       - postgres-server
     environment:
