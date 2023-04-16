@@ -9,7 +9,7 @@ TOKEN = "5776698149:AAEFmN4J5n3nbf8f_th8LeuYo3XMwVHoKrE"
 updater = Updater(TOKEN)
 dispatcher = updater.dispatcher
 
-AVAILABLE_COMMANDS = ["register", "login", "new_word", "get_word"]
+AVAILABLE_COMMANDS = ["register", "login", "add_group", "add_word", "get_word", "get_all_group_words"]
 
 def register(update, context):
     if context.user_data.get("authorized", False):
@@ -26,14 +26,24 @@ def login(update, context):
         context.user_data['status'] = UserStatuses.logining
 
 @authorized_required
-def new_word(update, context):
+def add_group(update, context):
+    context.user_data["status"] = UserStatuses.adding_group
+    update.message.reply_text("Enter the group name")
+
+@authorized_required
+def add_word(update, context):
     context.user_data["status"] = UserStatuses.adding_word
-    update.message.reply_text("Enter your data in format <word:word>")
+    update.message.reply_text("Enter your data in format <word:meaning:group>")
 
 @authorized_required
 def get_word(update, context):
     context.user_data["status"] = UserStatuses.getting_word
-    update.message.reply_text("Enter the word ( * to get all words )")
+    update.message.reply_text("Enter the word ( * to get_word all words )")
+
+@authorized_required
+def get_all_group_words(update, context):
+    context.user_data["status"] = UserStatuses.getting_all_group_words
+    update.message.reply_text("Enter the group name")
 
 def input(update, context):
     match context.user_data.get("status", None):
@@ -51,47 +61,69 @@ def input(update, context):
                 update.message.reply_text("Successfuly created")
 
         case UserStatuses.logining:
-            data = update.message.text
-            username, password = data.split(":")
+            data = update.message.text 
+            try:
+                username, password = data.split(":")
+            except:
+                del context.user_data['status']
+                return
             if db_connection.is_login_successful(username, password):
                 context.user_data["authorized"] = username
                 update.message.reply_text(f"Successfully authorized as {username}")
             else:
                 update.message.reply_text("Invalid data")
 
+        case UserStatuses.adding_group:
+            data = update.message.text
+            username = context.user_data["authorized"]
+            result = db_connection.add_group(username, data)
+            update.message.reply_text(result.description)
+
+        case UserStatuses.adding_word:
+        # we add only lowercase words
+            data = update.message.text
+            username = context.user_data["authorized"]
+            try:
+                word, meaning, group_name = data.lower().split(":")
+                result = db_connection.add_word(username, word, meaning, group_name)
+                update.message.reply_text(result.description)
+            except:
+                update.message.reply_text('Bad format')
+    
         case UserStatuses.getting_word:
             word = update.message.text.lower()
             username = context.user_data["authorized"]
-            if (result := db_connection.get_word(username, word)) == DbStatuses.dictionary_error:
-                update.message.reply_text("Error. Probably there is no such word")
+            result = db_connection.get_word(username, word)
+            if isinstance(result, str):
+                update.message.reply_text(result)
             else:
-                for row in result:
-                    data = ": ".join(row)
-                    update.message.reply_text(data)
-
-        case UserStatuses.adding_word:
-            # we add only lowercase words
+                update.message.reply_text(result.description)
+            
+        case UserStatuses.getting_all_group_words:
             data = update.message.text
             username = context.user_data["authorized"]
-            word, meaning = data.lower().split(":")
-            if db_connection.add_word(username, word, meaning) == DbStatuses.dictionary_error:
-                update.message.reply_text("Error")
+            result = db_connection.get_all_group_words(username, data)
+            if isinstance(result, str):
+                update.message.reply_text(result)
             else:
-                update.message.reply_text("Successfully added")
+                update.message.reply_text(result.description)
             
-        case _:
+        case None:
             update.message.reply_text("What do you want: ")
             for command in AVAILABLE_COMMANDS:
                 update.message.reply_text(f"/{command}")
 
-    del context.user_data['status']
+    if context.user_data.get('status', False):
+        del context.user_data['status']
 
 
 if __name__ == "__main__":
     dispatcher.add_handler(CommandHandler("register", register))
     dispatcher.add_handler(CommandHandler("login", login))
-    dispatcher.add_handler(CommandHandler("new_word", new_word))
+    dispatcher.add_handler(CommandHandler("add_group", add_group))
+    dispatcher.add_handler(CommandHandler("add_word", add_word))
     dispatcher.add_handler(CommandHandler("get_word", get_word))
+    dispatcher.add_handler(CommandHandler("get_all_group_words", get_all_group_words))
     dispatcher.add_handler(MessageHandler(Filters.text, input))
 
     updater.start_polling()
