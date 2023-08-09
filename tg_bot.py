@@ -56,27 +56,25 @@ def input(update, context):
             data = update.message.text
             try:
                 username, password = data.split(":")
+                result = db_connection.add_user(username, password)
+                if result == DbStatuses.user_already_created:
+                    update.message.reply_text("There is already user with this username")
+                else:
+                    update.message.reply_text("Successfuly created")
             except:
-                del context.user_data['status']
-                return
-            result = db_connection.add_user(username, password)
-            if result == DbStatuses.user_already_created:
-                update.message.reply_text("There is already user with this username")
-            else:
-                update.message.reply_text("Successfuly created")
-
+                update.message.reply_text('Bad format')
+                
         case UserStatuses.logining:
             data = update.message.text 
             try:
                 username, password = data.split(":")
+                if db_connection.is_login_successful(username, password):
+                    context.user_data["authorized"] = username
+                    update.message.reply_text(f"Successfully authorized as {username}")
+                else:
+                    update.message.reply_text("Invalid data")
             except:
-                del context.user_data['status']
-                return
-            if db_connection.is_login_successful(username, password):
-                context.user_data["authorized"] = username
-                update.message.reply_text(f"Successfully authorized as {username}")
-            else:
-                update.message.reply_text("Invalid data")
+                update.message.reply_text('Bad format')
 
         case UserStatuses.adding_group:
             data = update.message.text
