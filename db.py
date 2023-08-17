@@ -36,13 +36,10 @@ class DbConnection:
             return DbStatuses.user_already_created
 
     def is_login_successful(self, username:str, password:str) -> bool:
-        try:
-            self.cursor.execute(f"""SELECT * FROM users WHERE
-            username='{username}' AND password='{password}';""")
-            result = self.cursor.fetchone()
-            return result is not None
-        except:
-            return False
+        self.cursor.execute(f"""SELECT * FROM users WHERE
+        username='{username}' AND password='{password}';""")
+        result = self.cursor.fetchone()
+        return result is not None
         
     def add_group(self, username:str, group_name:str) -> DbStatuses:
         try:
