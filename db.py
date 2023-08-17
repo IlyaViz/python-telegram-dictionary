@@ -7,20 +7,16 @@ from typing import Union
 class DbConnection:
     def __init__(self):
         PASSWORD = os.environ['PG_PASSWORD']
-        retry_count = 0
-        while True:
-            if retry_count == 3:
-                raise psycopg2.OperationalError("No access to db. Check if db has started")
-            
-            try:
-                self.connection = psycopg2.connect( host="postgres-server", 
+        for retry_count in range(3):
+	        if retry_count == 2:
+		        raise psycopg2.OperationalError("No access to db. Check if db has started")
+	        try:
+		        self.connection = psycopg2.connect( host="postgres-server", 
                                                 database="postgres", 
                                                 user="postgres", 
                                                 password=PASSWORD)
-                break
-            except psycopg2.OperationalError as e:
-                retry_count += 1
-                time.sleep(1)
+	        except psycopg2.OperationalError as e:
+		        time.sleep(1)
   
         self.connection.autocommit = True   
         self.cursor = self.connection.cursor()
